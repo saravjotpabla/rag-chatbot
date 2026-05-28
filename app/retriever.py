@@ -1,10 +1,13 @@
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 import numpy as np
+from pathlib import Path
+
+INDEX_PATH = Path(__file__).resolve().parent.parent / "embeddings" / "faiss_index"
 
 def load_index():
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vectorstore = FAISS.load_local("embeddings/faiss_index", embeddings, allow_dangerous_deserialization=True)
+    vectorstore = FAISS.load_local(str(INDEX_PATH), embeddings, allow_dangerous_deserialization=True)
     return vectorstore, embeddings
 
 
