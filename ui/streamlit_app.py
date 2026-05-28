@@ -16,11 +16,21 @@ def get_index():
 st.title("RAG Chatbot")
 st.write("Ask a question and get answers grounded in your documents.")
 
-question = st.text_input("Your question", placeholder="e.g. What are the five pillars of the AWS Well-Architected Framework?")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-if st.button("Ask") and question.strip():
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
+
+question = st.chat_input("Ask a question...")
+
+if question:
+    with st.chat_message("user"):
+        st.write(question)
+
     vectorstore, _ = get_index()
-    prompt = build_prompt()
+    prompt = build_prompt(st.session_state.messages)
 
     with st.spinner("Retrieving and generating answer..."):
         results = retrieve(question, vectorstore, k=3)
@@ -28,10 +38,13 @@ if st.button("Ask") and question.strip():
         message = answer_question(question, context, prompt)
         answer = message.content[0].text
 
-    st.success(answer)
+    with st.chat_message("assistant"):
+        st.write(answer)
+        with st.expander("Sources"):
+            for i, chunk in enumerate(results, 1):
+                st.markdown(f"**Chunk {i}**")
+                st.write(chunk.page_content)
+                st.divider()
 
-    with st.expander("Sources"):
-        for i, chunk in enumerate(results, 1):
-            st.markdown(f"**Chunk {i}**")
-            st.write(chunk.page_content)
-            st.divider()
+    st.session_state.messages.append({"role": "user", "content": question})
+    st.session_state.messages.append({"role": "assistant", "content": answer})

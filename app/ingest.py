@@ -11,7 +11,7 @@ def load_pdf():
 
 def split_text(docs):
     text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size = 1000,
+    chunk_size = 500,
     chunk_overlap  = 50,
     length_function = len,
     )
